@@ -158,6 +158,7 @@ jobs:
         run: cp reviewable-client/rules_firecrypt.json enterprise-tools
 
       - name: Committing changes
+        id: commit_changes
         working-directory: './enterprise-tools'
         run: |
           if ! git diff --exit-code; then
@@ -165,10 +166,11 @@ jobs:
             git config user.name "Build Process"
             git add rules_firecrypt.json
             git commit -m 'Updated encryption rules'
+            echo "::set-ouput name=CHANGES::true"
           fi
 
       - name: Pushing changes
-        if: env.SHOULD_RELEASE == 'true'
+        if: env.SHOULD_RELEASE == 'true' && steps.commit_changes.outputs.CHANGES == 'true'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ env.GITHUB_TOKEN || github.token }}
