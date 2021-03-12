@@ -154,6 +154,7 @@ jobs:
 
       - working-directory: './enterprise-tools'
         run: |
+
           ls
           git config user.email "build@reviewable.io"
           git config user.name "Build Process"
