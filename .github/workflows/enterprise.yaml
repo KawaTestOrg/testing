@@ -159,10 +159,16 @@ jobs:
         with:
           path: 'enterprise-tools'
           repository: 'TEAMBLAWA/test-enterprise-tools'
+<<<<<<< HEAD
           token: ${{ env.GITHUB_TOKEN || github.token }}
+=======
+>>>>>>> 6c965d8 (update)
 
       - if: env.SHOULD_RELEASE == 'true'
         run: cp reviewable-client/rules_firecrypt.json enterprise-tools
+
+      - working-directory: './enterprise-tools'
+        run: ls
 
       - name: Committing changes
         if: env.SHOULD_RELEASE == 'true'
