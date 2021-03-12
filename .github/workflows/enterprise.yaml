@@ -13,6 +13,7 @@ env:
   FIREBASE_DEPLOY_TOKEN: ${{ secrets.FIREBASE_DEPLOY_TOKEN }}
   LAST_SHIPPABLE_RUN: 4638
   BRANCH: ${{ github.ref }}
+  GITHUB_TOKEN: ${{ github.token }}
   SLACK_WEBHOOK: ${{ secrets.SLACK_URL }}
   BUILD_NUMBER: ${{ github.run_number }}
   REVIEWABLE_FIREBASE: reviewable
@@ -164,7 +165,6 @@ jobs:
           message: 'Updated encryption rules'
           directory: './enterprise-tools'
           branch: release
-          repository: 'TEAMBLAWA/test-enterprise-tools'
 
       # - name: Assign BUILD_URL
       #   if: env.SHOULD_RELEASE == 'true'
