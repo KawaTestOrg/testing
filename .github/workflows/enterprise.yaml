@@ -79,6 +79,7 @@ jobs:
       - name: Assign BUILD_GROUP_NUMBER
         id: build_group_number
         run: |
+          echo ${{ steps.versions.outputs.GHE_VERSION_RANGE }}
           BUILD_GROUP_NUMBER=$(echo $(expr $BUILD_NUMBER + $LAST_SHIPPABLE_RUN) | sed 's/\..*//')
           echo "BUILD_GROUP_NUMBER=$BUILD_GROUP_NUMBER" >> $GITHUB_ENV
       - name: Assign PULL_REQUEST
