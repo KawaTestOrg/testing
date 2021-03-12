@@ -157,7 +157,6 @@ jobs:
 
       - name: Committing changes
         if: env.SHOULD_RELEASE == 'true'
-        working-directory: './enterprise-tools'
         uses: actions-js/push@master
         with:
           github_token: ${{ env.GITHUB_TOKEN }}
