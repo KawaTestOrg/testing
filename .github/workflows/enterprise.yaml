@@ -165,7 +165,7 @@ jobs:
           message: 'Updated encryption rules'
           directory: './enterprise-tools'
           branch: release
-          repository: 'https://github.com/TEAMBLAWA/test-enterprise-tools.git'
+          repository: 'TEAMBLAWA/test-enterprise-tools'
 
       # - name: Assign BUILD_URL
       #   if: env.SHOULD_RELEASE == 'true'
