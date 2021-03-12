@@ -172,14 +172,12 @@ jobs:
         if: env.SHOULD_RELEASE == 'true'
         uses: EndBug/add-and-commit@v7
         with:
-          github_token: ${{ github.token }}
           add: 'rules_firecrypt.json'
           author_name: 'Build Process'
           author_email: 'build@reviewable.io'
           message: 'Updated encryption rules'
           cwd: './enterprise-tools'
           branch: release
-          repository: 'TEAMBLAWA/test-enterprise-tools'
 
       # - name: Assign BUILD_URL
       #   if: env.SHOULD_RELEASE == 'true'
