@@ -13,7 +13,6 @@ env:
   FIREBASE_DEPLOY_TOKEN: ${{ secrets.FIREBASE_DEPLOY_TOKEN }}
   LAST_SHIPPABLE_RUN: 4638
   BRANCH: ${{ github.ref }}
-  GITHUB_TOKEN: ${{ github.token }}
   SLACK_WEBHOOK: ${{ secrets.SLACK_URL }}
   BUILD_NUMBER: ${{ github.run_number }}
   REVIEWABLE_FIREBASE: reviewable
@@ -159,7 +158,7 @@ jobs:
         if: env.SHOULD_RELEASE == 'true'
         uses: actions-js/push@master
         with:
-          github_token: ${{ github.token }}
+          github_token: ${{ env.GITHUB_TOKEN }}
           author_name: 'Build Process'
           author_email: build@reviewable.io
           message: 'Updated encryption rules'
