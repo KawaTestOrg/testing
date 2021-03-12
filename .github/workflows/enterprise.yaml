@@ -146,6 +146,7 @@ jobs:
           echo $GHE_VERSION_RANGE
           echo "ENV NODE_ENV=production REVIEWABLE_ENV=enterprise REVIEWABLE_VERSION=\"${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}\" REVIEWABLE_MIN_VERSION=\"${{ steps.versions.outputs.MIN_SERVER_VERSION }}.${{ steps.versions.outputs.MIN_CLIENT_VERSION }}\" REVIEWABLE_GHE_VERSION_RANGE=\"$GHE_VERSION_RANGE\" REVIEWABLE_CLIENT_DIST=client-dist" >>Dockerfile
           sed -e 's|^|reviewable-server/|' ./reviewable-server/.dockerignore >>.dockerignore
+          cat Dockerfile
 
       ####################################
       ##          on release            ##
