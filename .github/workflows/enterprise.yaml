@@ -70,7 +70,7 @@ jobs:
           MIN_CLIENT_VERSION=$(cat min_client_version)
           GHE_VERSION_RANGE="$(cat ghe_version_range)"
           echo $GHE_VERSION_RANGE
-          echo "::set-output name=SERVER_VERSION::$SERVER_VERSION
+          echo "::set-output name=SERVER_VERSION::$SERVER_VERSION"
           echo "::set-output name=CLIENT_VERSION::$CLIENT_VERSION"
           echo "::set-output name=MIN_CLIENT_VERSION::$MIN_CLIENT_VERSION"
           echo "::set-output name=MIN_SERVER_VERSION::$MIN_SERVER_VERSION"
