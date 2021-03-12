@@ -7,14 +7,12 @@ on:
     branches:
       - release
 env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SLACK_URL: ${{ secrets.SLACK_URL }}
   GITTER_URL: ${{ secrets.GITTER_URL }}
-  SENTRY_API_KEY: ${{ secrets.SENTRY_API_KEY }}
   FIREBASE_DEPLOY_TOKEN: ${{ secrets.FIREBASE_DEPLOY_TOKEN }}
-  MY_TOKEN: ${{ secrets.MY_TOKEN }}
   LAST_SHIPPABLE_RUN: 4638
   BRANCH: ${{ github.ref }}
-  GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
   SLACK_WEBHOOK: ${{ secrets.SLACK_URL }}
   BUILD_NUMBER: ${{ github.run_number }}
   REVIEWABLE_FIREBASE: reviewable
@@ -31,7 +29,6 @@ env:
   REVIEWABLE_CLIENT_SENTRY_DSN: https://1a7d50a470574294937db62e304cabbb@sentry.io/124660
   SENTRY_ORG: reviewableio
   SENTRY_PROJECT_ID: testing
-  SENTRY_PROJECT: reviewableio/testing
 jobs:
   Build:
     runs-on: ubuntu-latest
@@ -50,10 +47,10 @@ jobs:
           git --version
       - uses: actions/checkout@v2
         with:
-          token: ${{ github.token }}
+          token: ${{ env.GITHUB_TOKEN }}
       - name: Assign SHOULD_RELEASE
         run: |
-          echo $GITHUB_ACTOR
+          echo ${{ github.ref }}
           if [[ ${{ github.event_name }} != "pull_request" &&
             ($GITHUB_REF == "\\refs\\heads\\release" ||
             $GITHUB_REF == "refs/heads/release") ]]; then
@@ -100,14 +97,14 @@ jobs:
         with:
           repository: 'TEAMBLAWA/testing'
           path: 'reviewable-client'
-          token: ${{ github.token }}
+          token: ${{ env.GITHUB_TOKEN }}
           ref: 'build-${{ steps.versions.outputs.CLIENT_VERSION }}'
       - name: Clone server repo
         uses: actions/checkout@v2
         with:
           repository: 'TEAMBLAWA/testing-server'
           path: 'reviewable-server'
-          token: ${{ github.token }}
+          token: ${{ env.GITHUB_TOKEN }}
           ref: 'build-${{ steps.versions.outputs.SERVER_VERSION }}'
       - uses: actions/cache@v2
         with:
@@ -154,30 +151,30 @@ jobs:
         with:
           path: 'enterprise-tools'
           repository: 'TEAMBLAWA/test-enterprise-tools'
-          token: ${{ github.token }}
+          token: ${{ env.GITHUB_TOKEN }}
 
       - if: env.SHOULD_RELEASE == 'true'
         run: cp reviewable-client/rules_firecrypt.json enterprise-tools
 
-      # - name: Committing changes
-      #   working-directory: './enterprise-tools'
-      #   run: |
-      #     echo $GITHUB_ACTOR
-      #     git config user.email "build@reviewable.io"
-      #     git config user.name "Build Process"
-      #     git add rules_firecrypt.json
-      #     git commit -m 'Updated encryption rules'
+      - name: Committing changes
+        working-directory: './enterprise-tools'
+        run: |
+          if ! git diff --exit-code; then
+            git config user.email "build@reviewable.io"
+            git config user.name "Build Process"
+            git add rules_firecrypt.json
+            git commit -m 'Updated encryption rules'
+          fi
 
-      - name: Committing and Pushing changes
+      - name: Pushing changes
         if: env.SHOULD_RELEASE == 'true'
-        uses: EndBug/add-and-commit@v7
+        uses: ad-m/github-push-action@master
         with:
-          add: 'rules_firecrypt.json'
-          author_name: 'Build Process'
-          author_email: 'build@reviewable.io'
+          github_token: ${{ env.GITHUB_TOKEN }}
           message: 'Updated encryption rules'
-          cwd: './enterprise-tools'
-          branch: release
+          directory: './enterprise-tools'
+          branch: main
+          repository: 'TEAMBLAWA/test-enterprise-tools'
 
       # - name: Assign BUILD_URL
       #   if: env.SHOULD_RELEASE == 'true'
