@@ -153,18 +153,20 @@ jobs:
         run: cp reviewable-client/rules_firecrypt.json enterprise-tools
 
       - working-directory: './enterprise-tools'
-        run: ls
+        run: |
+          git config user.email "build@reviewable.io"
+          git config user.name "Build Process"
+          git commit rules_firecrypt.json -m 'Updated encryption rules'
 
       - name: Committing changes
         if: env.SHOULD_RELEASE == 'true'
-        uses: actions-js/push@master
+        uses: ad-m/github-push-action@master
         with:
           github_token: ${{ env.GITHUB_TOKEN }}
-          author_name: 'Build Process'
-          author_email: build@reviewable.io
           message: 'Updated encryption rules'
           directory: './enterprise-tools'
           branch: release
+          repository: 'TEAMBLAWA/test-enterprise-tools'
 
       # - name: Assign BUILD_URL
       #   if: env.SHOULD_RELEASE == 'true'
