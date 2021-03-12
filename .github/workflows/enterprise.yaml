@@ -7,7 +7,7 @@ on:
     branches:
       - release
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SLACK_URL: ${{ secrets.SLACK_URL }}
   GITTER_URL: ${{ secrets.GITTER_URL }}
   FIREBASE_DEPLOY_TOKEN: ${{ secrets.FIREBASE_DEPLOY_TOKEN }}
@@ -42,6 +42,7 @@ jobs:
       # Bug in `act` tool causes git refs to assign with \\ as separators in windows environments
       # Bug: single quotes do not get intepreted correctly in if statements
       - name: Update git
+        if: env.ACT
         run: |
           add-apt-repository -y ppa:git-core/ppa && apt -qq -y update && apt install -qq -y git
           git --version
