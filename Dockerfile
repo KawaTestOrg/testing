@@ -1,4 +1,4 @@
 FROM nginx
 WORKDIR /usr/share/nginx/html
 
-COPY testing/build ./
+COPY reviewable-client/build ./
