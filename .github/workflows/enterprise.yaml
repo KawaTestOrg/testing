@@ -159,7 +159,7 @@ jobs:
         if: env.SHOULD_RELEASE == 'true'
         uses: actions-js/push@master
         with:
-          github_token: ${{ env.GITHUB_TOKEN }}
+          github_token: ${{ github.token }}
           author_name: 'Build Process'
           author_email: build@reviewable.io
           message: 'Updated encryption rules'
