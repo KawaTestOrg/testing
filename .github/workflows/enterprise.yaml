@@ -214,11 +214,9 @@ jobs:
 
       - name: Tagging release version
         if: env.SHOULD_RELEASE == 'true'
-        uses: negz/create-tag@v1
-        with:
-          version: 'build-${{ env.BUILD_GROUP_NUMBER }}'
-          message: 'Build ${{ env.BUILD_GROUP_NUMBER }}, v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}'
-          token: ${{ env.GITHUB_TOKEN || github.token }}
+        run: |
+          git tag -a "build-$BUILD_GROUP_NUMBER" -m "Build $BUILD_GROUP_NUMBER, v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}"
+          git push --tags origin release
 
       # - name: Instal Firebase Tools
       #   if: env.SHOULD_RELEASE == 'true'
