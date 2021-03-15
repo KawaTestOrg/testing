@@ -165,8 +165,8 @@ jobs:
         working-directory: './enterprise-tools'
         run: |
           if ! git diff --exit-code; then
-            git config user.email "build@reviewable.io"
-            git config user.name "Build Process"
+            git config --local user.email "build@reviewable.io"
+            git config --local user.name "Build Process"
             git add rules_firecrypt.json
             git commit -m 'Updated encryption rules'
             echo "::set-ouput name=CHANGES::true"
@@ -215,6 +215,8 @@ jobs:
       - name: Tagging release version
         if: env.SHOULD_RELEASE == 'true'
         run: |
+          git config --local user.email "build@reviewable.io"
+          git config --local user.name "Build Process"
           git tag -a "build-$BUILD_GROUP_NUMBER" -m "Build $BUILD_GROUP_NUMBER, v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}"
           git push --tags origin release
 
