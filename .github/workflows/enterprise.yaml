@@ -9,11 +9,8 @@ on:
       - master
 env:
   SLACK_URL: ${{ secrets.SLACK_URL }}
-<<<<<<< HEAD
   GIT_CONFIG_NAME: "Build Process"
   GIT_CONFIG_EMAIL: build@reviewable.io
-=======
->>>>>>> 26a7c0e (update)
   LAST_SHIPPABLE_RUN: 4638
   BRANCH: ${{ github.ref }}
   SLACK_WEBHOOK: ${{ secrets.SLACK_URL }}
