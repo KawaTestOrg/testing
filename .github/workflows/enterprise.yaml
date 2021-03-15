@@ -8,7 +8,6 @@ on:
       - release
       - master
 env:
-  GITHUB_TOKEN: ${{ github.token }}
   SLACK_URL: ${{ secrets.SLACK_URL }}
   LAST_SHIPPABLE_RUN: 4638
   BRANCH: ${{ github.ref }}
@@ -284,6 +283,8 @@ jobs:
       - name: Delete release on failure
         if: (env.SHOULD_RELEASE == 'true' || env.SHOULD_DEPLOY_TEST == 'true') && failure()
         uses: dev-drprasad/delete-tag-and-release@v0.1.3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           delete_release: true
           tag_name: "build-${{ env.BUILD_GROUP_NUMBER }}" # tag name to delete
