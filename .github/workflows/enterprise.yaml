@@ -166,6 +166,7 @@ jobs:
         working-directory: './enterprise-tools'
         run: |
           if ! git diff --exit-code; then
+            ls
             git config --local user.email "build@reviewable.io"
             git config --local user.name "Build Process"
             git add rules_firecrypt.json
