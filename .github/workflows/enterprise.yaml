@@ -162,11 +162,11 @@ jobs:
         run: cp reviewable-client/rules_firecrypt.json enterprise-tools
 
       - name: Committing changes
+        if: env.SHOULD_RELEASE == 'true'
         id: commit_changes
         working-directory: './enterprise-tools'
         run: |
           if ! git diff --exit-code; then
-            ls
             git config --local user.email "build@reviewable.io"
             git config --local user.name "Build Process"
             git add rules_firecrypt.json
@@ -184,12 +184,14 @@ jobs:
           repository: 'TEAMBLAWA/test-enterprise-tools'
 
       - name: Login to Docker Hub
+        if: env.SHOULD_RELEASE == 'true'
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push
+        if: env.SHOULD_RELEASE == 'true'
         id: docker_build
         uses: docker/build-push-action@v2
         with:
