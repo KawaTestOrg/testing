@@ -8,6 +8,7 @@ on:
       - release
       - master
 env:
+  # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SLACK_URL: ${{ secrets.SLACK_URL }}
   LAST_SHIPPABLE_RUN: 4638
   BRANCH: ${{ github.ref }}
