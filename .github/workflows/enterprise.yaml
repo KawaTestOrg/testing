@@ -198,13 +198,13 @@ jobs:
       #     version: ${{ env.BUILD_GROUP_NUMBER }}
       #     set_commits: skip
 
-      # - name: Tagging release version
-      #   if: env.SHOULD_RELEASE == 'true'
-      #   uses: mathieudutour/github-tag-action@v5.2
-      #   with:
-      #     custom_tag: ${{ env.BUILD_GROUP_NUMBER }}
-      #     tag_prefix: "build-"
-      #     github_token: ${{ env.GITHUB_TOKEN || github.token }}
+      - name: Tagging release version
+        if: env.SHOULD_RELEASE == 'true'
+        uses: negz/create-tag@v1
+        with:
+          version: 'build-${{ env.BUILD_GROUP_NUMBER }}'
+          message: 'Build ${{ env.BUILD_GROUP_NUMBER }}, v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}'
+          token: ${{ env.GITHUB_TOKEN || github.token }}
 
       # - name: Instal Firebase Tools
       #   if: env.SHOULD_RELEASE == 'true'
