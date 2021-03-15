@@ -9,26 +9,16 @@ on:
 env:
   # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SLACK_URL: ${{ secrets.SLACK_URL }}
-  GITTER_URL: ${{ secrets.GITTER_URL }}
-  FIREBASE_DEPLOY_TOKEN: ${{ secrets.FIREBASE_DEPLOY_TOKEN }}
   LAST_SHIPPABLE_RUN: 4638
   BRANCH: ${{ github.ref }}
   SLACK_WEBHOOK: ${{ secrets.SLACK_URL }}
   BUILD_NUMBER: ${{ github.run_number }}
-  REVIEWABLE_FIREBASE: reviewable
-  REVIEWABLE_FIREBASE_WEB_API_KEY: AIzaSyDv2EitKktEvCxDdBzDvepaFcsublGUGRI
-  REVIEWABLE_FIREBASE_PROJECT_ID: firebase-reviewable
-  REVIEWABLE_HOST_URL: https://reviewable.io
-  REVIEWABLE_GITHUB_URL: https://github.com
-  REVIEWABLE_GITHUB_CLIENT_ID: 7da38b6fb966259af6d5
   REVIEWABLE_MIXPANEL_TOKEN: 47d8b419a2152fa04c255781d51c209e
   REVIEWABLE_HEADWAY_ACCOUNT: qJAvVy
   REVIEWABLE_STRIPE_PUBLISHABLE_KEY: pk_live_ih0FgRCAkYNrayIOV2vitb60
   REVIEWABLE_TERMS_URL: https://github.com/Reviewable/Reviewable/blob/master/legal/terms.md
   REVIEWABLE_PRIVACY_URL: https://github.com/Reviewable/Reviewable/blob/master/legal/privacy.md
   REVIEWABLE_CLIENT_SENTRY_DSN: https://1a7d50a470574294937db62e304cabbb@sentry.io/124660
-  SENTRY_ORG: reviewableio
-  SENTRY_PROJECT_ID: testing
 jobs:
   Build:
     runs-on: ubuntu-latest
@@ -51,15 +41,25 @@ jobs:
           token: ${{ env.GITHUB_TOKEN || github.token }}
       - name: Assign SHOULD_RELEASE
         run: |
-          echo ${{ github.ref }}
           if [[ ${{ github.event_name }} != "pull_request" &&
-            ($GITHUB_REF == "\\refs\\heads\\release" ||
-            $GITHUB_REF == "refs/heads/release") ]]; then
+              ($GITHUB_REF == "\\refs\\heads\\release" ||
+              $GITHUB_REF == "refs/heads/release") ]]; then
             SHOULD_RELEASE=true;
           else
             SHOULD_RELEASE=false;
           fi
           echo "SHOULD_RELEASE=$SHOULD_RELEASE" >> $GITHUB_ENV
+
+      - name: Assign SHOULD_DEPLOY_TEST
+        run: |
+          if [[ ${{ github.event_name }} != "pull_request" &&
+              ($GITHUB_REF == "\\refs\\heads\\master" ||
+              $GITHUB_REF == "refs/heads/master") ]]; then
+            SHOULD_DEPLOY_TEST=true;
+          else
+            SHOULD_DEPLOY_TEST=false;
+          fi
+          echo "SHOULD_DEPLOY_TEST=$SHOULD_DEPLOY_TEST" >> $GITHUB_ENV
 
       - name: Get build versions
         id: versions
@@ -200,18 +200,6 @@ jobs:
         run: |
           echo "BUILD_URL=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_ENV
 
-      # - name: Sentry release
-      #   if: env.SHOULD_RELEASE == 'true'
-      #   uses: getsentry/action-release@v1
-      #   env:
-      #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      #     SENTRY_PROJECT: ${{ env.SENTRY_PROJECT_ID }}
-      #   with:
-      #     sourcemaps: 'dist/static/js'
-      #     environment: 'production'
-      #     version: ${{ env.BUILD_GROUP_NUMBER }}
-      #     set_commits: skip
-
       - name: Tagging release version
         if: env.SHOULD_RELEASE == 'true'
         run: |
@@ -220,54 +208,83 @@ jobs:
           git tag -a "build-$BUILD_GROUP_NUMBER" -m "Build $BUILD_GROUP_NUMBER, v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}"
           git push --tags origin release
 
-      # - name: Instal Firebase Tools
-      #   if: env.SHOULD_RELEASE == 'true'
-      #   run: bash -e ./scripts/install_firebase.sh
+      - name: Setup cloud SDK
+        if: env.SHOULD_DEPLOY_TEST == 'true'
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: 'reviewable-dev-enterprise-test'
+          service_account_key: ${{ secrets.SERVICE_ACCOUNT_CREDENTIALS }}
+          export_default_credentials: true
 
-      # - name: Deploy to Firebase
-      #   if: env.SHOULD_RELEASE == 'true'
-      #   run: |
-      #     echo "Deploying client to $BUILD_TARGET..."
-      #     firebase deploy --non-interactive --token "$FIREBASE_DEPLOY_TOKEN" --project "$FIREBASE_PROJECT" --public build --only hosting,database --message "Build $BUILD_GROUP_NUMBER"
+      - name: Update app.yaml
+        if: env.SHOULD_DEPLOY_TEST == 'true'
+        run: |
+          echo "Deploying test server..."
 
-      # - name: Assign NOTIFICATION
-      #   id: notify_on_success
-      #   if: env.SHOULD_RELEASE == 'true'
-      #   run: |
-      #     NOTIFICATION=$(echo "{\"level\": \"info\", \"message\": \"Client [build $BUILD_GROUP_NUMBER]($BUILD_URL) deployed\", \"html\": \"Client <a href=\\\"$BUILD_URL\\\">build $BUILD_GROUP_NUMBER</a> deployed\"}")
-      #     echo "::set-output name=NOTIFICATION::$NOTIFICATION"
+          echo "  REVIEWABLE_LICENSE: '$REVIEWABLE_LICENSE'" >>app.yaml
+          echo "  REVIEWABLE_FIREBASE_AUTH: '$REVIEWABLE_FIREBASE_AUTH'" >>app.yaml
+          echo "  REVIEWABLE_FIREBASE_PRIVATE_KEY: '$REVIEWABLE_FIREBASE_PRIVATE_KEY'" >>app.yaml
+          echo "  REVIEWABLE_ENCRYPTION_PRIVATE_KEYS: '$REVIEWABLE_ENCRYPTION_PRIVATE_KEYS'" >>app.yaml
+          echo "  REVIEWABLE_ENCRYPTION_AES_KEY: '$REVIEWABLE_ENCRYPTION_AES_KEY'" >>app.yaml
+          echo "  REVIEWABLE_GITHUB_CLIENT_SECRET: '$REVIEWABLE_GITHUB_CLIENT_SECRET'" >>app.yaml
+          echo "  AWS_SECRET_ACCESS_KEY: '$AWS_SECRET_ACCESS_KEY'" >>app.yaml
 
-      # - name: Assign NOTIFICATION on failure
-      #   id: notify_on_failure
-      #   if: env.SHOULD_RELEASE == 'true' && failure()
-      #   run: |
-      #     NOTIFICATION=$(echo "{\"level\": \"error\", \"message\": \"Client [build $BUILD_GROUP_NUMBER]($BUILD_URL) deployment failed\", \"html\": \"Client <a href=\\\"$BUILD_URL\\\">build $BUILD_GROUP_NUMBER</a> deployment failed\"}")
-      #     echo "::set-output name=NOTIFICATION::$NOTIFICATION"
+      - name: Deploy
+        if: env.SHOULD_DEPLOY_TEST == 'true'
+        uses: google-github-actions/deploy-appengine@main
+        with:
+          deliverables: app.yaml
+          version: ${{ env.BUILD_GROUP_NUMBER }}
 
-      # - name: Shortwave Notification
-      #   if: always() && env.SHOULD_RELEASE == 'true'
-      #   uses: fjogeleit/http-request-action@master
-      #   with:
-      #     url: ${{ secrets.SHORTWAVE_NOTIFICATIONS_URL }}
-      #     method: 'POST'
-      #     data: ${{ steps.notify_on_failure.outputs.NOTIFICATION || steps.notify_on_success.outputs.NOTIFICATION  }}
-      #     timeout: 15000
+      - name: Deleting obsolete versions
+        if: env.SHOULD_DEPLOY_TEST == 'true'
+        uses: Reviewable/appengine-remove-action@v2
+        with:
+          limit: 5
 
-      # - name: Gitter Notification
-      #   if: always() && env.SHOULD_RELEASE == 'true'
-      #   uses: fjogeleit/http-request-action@master
-      #   with:
-      #     url: ${{ secrets.GITTER_URL }}
-      #     method: 'POST'
-      #     data: ${{ steps.notify_on_failure.outputs.NOTIFICATION || steps.notify_on_success.outputs.NOTIFICATION  }}
-      #     timeout: 15000
+      - name: Assign NOTIFICATION
+        id: notify_on_successful_release
+        if: env.SHOULD_RELEASE == 'true'
+        run: |
+          NOTIFICATION=$(echo "{\"level\": \"info\", \"message\": \"Enterprise [build $BUILD_GROUP_NUMBER v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}]($BUILD_URL) released\", \"html\": \"Enterprise <a href=\\\"$BUILD_URL\\\">build $BUILD_GROUP_NUMBER v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}</a> released\"}")
+          echo "::set-output name=NOTIFICATION::$NOTIFICATION"
+
+      - name: Assign NOTIFICATION on failure
+        id: notify_on_failed_release
+        if: env.SHOULD_RELEASE == 'true' && failure()
+        run: |
+          NOTIFICATION=$(echo "{\"level\": \"error\", \"message\": \"Enterprise [build $BUILD_GROUP_NUMBER]($BUILD_URL) deployment failed\", \"html\": \"Enterprise <a href=\\\"$BUILD_URL\\\">build $BUILD_GROUP_NUMBER v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}</a> failed\"}")
+          echo "::set-output name=NOTIFICATION::$NOTIFICATION"
+
+      - name: Assign NOTIFICATION
+        id: notify_on_successful_test_deploy
+        if: env.SHOULD_DEPLOY_TEST == 'true'
+        run: |
+          NOTIFICATION=$(echo "{\"level\": \"info\", \"message\": \"Enterprise test [build $BUILD_GROUP_NUMBER v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}]($BUILD_URL) released\", \"html\": \"Enterprise test <a href=\\\"$BUILD_URL\\\">build $BUILD_GROUP_NUMBER v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}</a> released\"}")
+          echo "::set-output name=NOTIFICATION::$NOTIFICATION"
+
+      - name: Assign NOTIFICATION on failure
+        id: notify_on_failed_test_deploy
+        if: env.SHOULD_DEPLOY_TEST == 'true' && failure()
+        run: |
+          NOTIFICATION=$(echo "{\"level\": \"error\", \"message\": \"Enterprise test [build $BUILD_GROUP_NUMBER]($BUILD_URL) deployment failed\", \"html\": \"Enterprise test <a href=\\\"$BUILD_URL\\\">build $BUILD_GROUP_NUMBER v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}</a> failed\"}")
+          echo "::set-output name=NOTIFICATION::$NOTIFICATION"
+
+      - name: Shortwave Notification
+        if: always() && (env.SHOULD_RELEASE == 'true' || env.SHOULD_DEPLOY_TEST == 'true')
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: ${{ secrets.SHORTWAVE_NOTIFICATIONS_URL }}
+          method: 'POST'
+          data: ${{ steps.notify_on_failed_release.outputs.NOTIFICATION || steps.notify_on_failed_test_deploy.outputs.NOTIFICATION || steps.notify_on_successful_release.outputs.NOTIFICATION || steps.notify_on_successful_test_deploy.outputs.NOTIFICATION  }}
+          timeout: 15000
 
       # ####################################
       # ##          on failure            ##
       # ####################################
-      # - name: Delete release on failure
-      #   if: env.SHOULD_RELEASE == 'true' && failure()
-      #   uses: dev-drprasad/delete-tag-and-release@v0.1.3
-      #   with:
-      #     delete_release: true
-      #     tag_name: "build-${{ env.BUILD_GROUP_NUMBER }}" # tag name to delete
+      - name: Delete release on failure
+        if: (env.SHOULD_RELEASE == 'true' || env.SHOULD_DEPLOY_TEST == 'true') && failure()
+        uses: dev-drprasad/delete-tag-and-release@v0.1.3
+        with:
+          delete_release: true
+          tag_name: "build-${{ env.BUILD_GROUP_NUMBER }}" # tag name to delete
