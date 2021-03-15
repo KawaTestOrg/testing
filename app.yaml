@@ -1,0 +1,30 @@
+runtime: custom
+env: flex
+api_version: 1
+service: default
+
+resources:
+  cpu: 0.5
+  memory_gb: 1.3
+  disk_size_gb: 10
+
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 1
+
+env_variables:
+  REVIEWABLE_HOST_URL: https://reviewable-enterprise-test.appspot-preview.com
+  REVIEWABLE_GITHUB_URL: https://github.com
+  REVIEWABLE_FIREBASE: reviewable-enterprise-test-aa718
+  REVIEWABLE_FIREBASE_PROJECT_ID: reviewable-enterprise-test
+  REVIEWABLE_FIREBASE_CLIENT_EMAIL: firebase-adminsdk-f01dp@reviewable-enterprise-test.iam.gserviceaccount.com
+  REVIEWABLE_FIREBASE_WEB_API_KEY: AIzaSyC8sZl5S0SBKdbGj-8dSo8mO7Apt68fN1U
+  REVIEWABLE_CODE_EXECUTOR: awslambda
+  REVIEWABLE_GITHUB_CLIENT_ID: daed3cae19ee8752142c
+  REVIEWABLE_UPLOADS_PROVIDER: s3
+  AWS_ACCESS_KEY_ID: AKIAJJQLXZ7HMEEN72KQ
+  AWS_REGION: us-west-2
+  REVIEWABLE_S3_BUCKET: files.reviewableusercontent.io
+  REVIEWABLE_UPLOADED_FILES_URL: https://files.reviewableusercontent.io
+  BLUEBIRD_LONG_STACK_TRACES: "1"
+  # Github Actions will automatically append more env variables here, so keep this section at the end!
