@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - release
+      - master
 env:
   # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SLACK_URL: ${{ secrets.SLACK_URL }}
