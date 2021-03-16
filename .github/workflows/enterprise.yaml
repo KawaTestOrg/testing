@@ -209,11 +209,11 @@ jobs:
 
       - name: Tagging release version
         if: env.SHOULD_RELEASE == 'true'
-        run: |
-          git config --local user.email "$GIT_CONFIG_EMAIL"
-          git config --local user.name "$GIT_CONFIG_EMAIL"
-          git tag -a "build-$BUILD_GROUP_NUMBER" -m "Build $BUILD_GROUP_NUMBER, v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}"
-          git push --tags origin release
+        uses: Reviewable/github-tag-action@v6.1
+        with:
+          custom_tag: '${{ env.BUILD_GROUP_NUMBER }}'
+          tag_prefix: 'build-'
+          custom_message: 'Build ${{ env.BUILD_GROUP_NUMBER }}, v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}'
 
       - name: Setup cloud SDK
         if: env.SHOULD_DEPLOY_TEST == 'true'
