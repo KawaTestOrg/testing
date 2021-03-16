@@ -12,6 +12,14 @@ automatic_scaling:
   min_num_instances: 1
   max_num_instances: 1
 
+liveness_check:
+  path: /
+  check_interval_sec: 10
+  timeout_sec: 5
+  failure_threshold: 6
+  success_threshold: 1
+  initial_delay_sec: 60
+
 env_variables:
   REVIEWABLE_HOST_URL: https://reviewable-enterprise-test.appspot-preview.com
   REVIEWABLE_GITHUB_URL: https://github.com
