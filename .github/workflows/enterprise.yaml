@@ -141,15 +141,16 @@ jobs:
         working-directory: ./reviewable-server
         run: yarn build
 
+      ####################################
+      ## on release OR test deployment  ##
+      ####################################
       - name: Update Dockerfile
+        if: env.SHOULD_RELEASE == 'true'
         run: |
           GHE_VERSION_RANGE="$(echo "${{ steps.versions.outputs.GHE_VERSION_RANGE }}")"
           echo "ENV NODE_ENV=production REVIEWABLE_ENV=enterprise REVIEWABLE_VERSION=\"${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}\" REVIEWABLE_MIN_VERSION=\"${{ steps.versions.outputs.MIN_SERVER_VERSION }}.${{ steps.versions.outputs.MIN_CLIENT_VERSION }}\" REVIEWABLE_GHE_VERSION_RANGE=\"$GHE_VERSION_RANGE\" REVIEWABLE_CLIENT_DIST=client-dist" >>Dockerfile
           sed -e 's|^|reviewable-server/|' ./reviewable-server/.dockerignore >>.dockerignore
 
-      ####################################
-      ##          on release            ##
-      ####################################
       - name: Clone Enterprise Tools
         if: env.SHOULD_RELEASE == 'true'
         uses: actions/checkout@v2
