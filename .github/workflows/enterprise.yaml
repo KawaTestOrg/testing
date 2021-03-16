@@ -8,7 +8,7 @@ on:
       - release
       - master
 env:
-  GITHUB_TOKEN: ${{ github.token }}
+  REVIEWABLE_GITHUB_TOKEN: ${{ secrets.REVIEWABLE_GITHUB_TOKEN }}
   SLACK_URL: ${{ secrets.SLACK_URL }}
   GIT_CONFIG_NAME: "Build Process"
   GIT_CONFIG_EMAIL: build@reviewable.io
@@ -41,7 +41,7 @@ jobs:
           git --version
       - uses: actions/checkout@v2
         with:
-          token: ${{ env.GITHUB_TOKEN || github.token }}
+          token: ${{ env.REVIEWABLE_GITHUB_TOKEN || github.token }}
       - name: Assign SHOULD_RELEASE
         run: |
           if [[ ${{ github.event_name }} != "pull_request" &&
@@ -103,14 +103,14 @@ jobs:
         with:
           repository: 'TEAMBLAWA/testing'
           path: 'reviewable-client'
-          token: ${{ env.GITHUB_TOKEN || github.token }}
+          token: ${{ env.REVIEWABLE_GITHUB_TOKEN || github.token }}
           ref: 'build-${{ steps.versions.outputs.CLIENT_VERSION }}'
       - name: Clone server repo
         uses: actions/checkout@v2
         with:
           repository: 'TEAMBLAWA/testing-server'
           path: 'reviewable-server'
-          token: ${{ env.GITHUB_TOKEN || github.token }}
+          token: ${{ env.REVIEWABLE_GITHUB_TOKEN || github.token }}
           ref: 'build-${{ steps.versions.outputs.SERVER_VERSION }}'
       - uses: actions/cache@v2
         with:
@@ -159,7 +159,7 @@ jobs:
         with:
           path: 'enterprise-tools'
           repository: 'TEAMBLAWA/test-enterprise-tools'
-          token: ${{ env.GITHUB_TOKEN || github.token }}
+          token: ${{ env.REVIEWABLE_GITHUB_TOKEN || github.token }}
 
       - if: env.SHOULD_RELEASE == 'true'
         run: cp reviewable-client/rules_firecrypt.json enterprise-tools
@@ -181,7 +181,7 @@ jobs:
         if: env.SHOULD_RELEASE == 'true' && steps.commit_changes.outputs.CHANGES == 'true'
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ env.GITHUB_TOKEN || github.token }}
+          github_token: ${{ env.REVIEWABLE_GITHUB_TOKEN || github.token }}
           directory: './enterprise-tools'
           branch: main
           repository: 'TEAMBLAWA/test-enterprise-tools'
