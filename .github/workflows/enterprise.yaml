@@ -34,11 +34,11 @@ jobs:
 
       # Bug in `act` tool causes git refs to assign with \\ as separators in windows environments
       # Bug: single quotes do not get intepreted correctly in if statements
-      # - name: Update git
-      #   if: env.ACT
-      #   run: |
-      #     add-apt-repository -y ppa:git-core/ppa && apt -qq -y update && apt install -qq -y git
-      #     git --version
+      - name: Update git
+        if: env.ACT
+        run: |
+          add-apt-repository -y ppa:git-core/ppa && apt -qq -y update && apt install -qq -y git
+          git --version
       - uses: actions/checkout@v2
         with:
           token: ${{ env.GITHUB_TOKEN || github.token }}
@@ -91,13 +91,6 @@ jobs:
           PULL_REQUEST=$(cat $GITHUB_EVENT_PATH | jq -r ".pull_request.number")
           if [[ "$PULL_REQUEST" = "null" ]]; then PULL_REQUEST="false"; fi
           echo "PULL_REQUEST=$PULL_REQUEST" >> $GITHUB_ENV
-      - name: Tagging release version
-        if: env.SHOULD_RELEASE == 'true'
-        uses: Reviewable/github-tag-action@v6.3
-        with:
-          custom_tag: '${{ env.BUILD_GROUP_NUMBER }}'
-          tag_prefix: 'build-'
-          custom_message: 'Build ${{ env.BUILD_GROUP_NUMBER }}, v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}'
 
       # REMOVE ME: when debugging is completed
       - name: Print info
@@ -212,8 +205,9 @@ jobs:
 
       - name: Tagging release version
         if: env.SHOULD_RELEASE == 'true'
-        uses: Reviewable/github-tag-action@v6.2
+        uses: Reviewable/github-tag-action@v6.3
         with:
+          github_token: ${{ github.token }}
           custom_tag: '${{ env.BUILD_GROUP_NUMBER }}'
           tag_prefix: 'build-'
           custom_message: 'Build ${{ env.BUILD_GROUP_NUMBER }}, v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}'
