@@ -209,7 +209,7 @@ jobs:
 
       - name: Tagging release version
         if: env.SHOULD_RELEASE == 'true'
-        uses: Reviewable/github-tag-action@v6.1
+        uses: Reviewable/github-tag-action@v6.2
         with:
           custom_tag: '${{ env.BUILD_GROUP_NUMBER }}'
           tag_prefix: 'build-'
