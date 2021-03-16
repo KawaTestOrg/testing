@@ -8,7 +8,7 @@ on:
       - release
       - master
 env:
-  REVIEWABLE_GITHUB_TOKEN: ${{ secrets.REVIEWABLE_GITHUB_TOKEN }}
+  REVIEWABLE_GITHUB_TOKEN: 'anthonykawa:${{ secrets.REVIEWABLE_GITHUB_TOKEN }}'
   SLACK_URL: ${{ secrets.SLACK_URL }}
   GIT_CONFIG_NAME: "Build Process"
   GIT_CONFIG_EMAIL: build@reviewable.io
