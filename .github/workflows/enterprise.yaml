@@ -41,7 +41,7 @@ jobs:
           git --version
       - uses: actions/checkout@v2
         with:
-          token: ${{ env.REVIEWABLE_GITHUB_TOKEN || github.token }}
+          token: ${{ secrets.REVIEWABLE_GITHUB_TOKEN }}
       - name: Assign SHOULD_RELEASE
         run: |
           if [[ ${{ github.event_name }} != "pull_request" &&
