@@ -184,7 +184,7 @@ jobs:
         if: env.SHOULD_RELEASE == 'true' && steps.commit_changes.outputs.CHANGES == 'true'
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ env.REVIEWABLE_GITHUB_TOKEN || github.token }}
+          github_token: ${{ secrets.REVIEWABLE_GITHUB_TOKEN }}
           directory: './enterprise-tools'
           branch: main
           repository: 'TEAMBLAWA/test-enterprise-tools'
@@ -208,12 +208,11 @@ jobs:
 
       - name: Tagging release version
         if: env.SHOULD_RELEASE == 'true'
-        uses: Reviewable/github-tag-action@v6.3
+        uses: mathieudutour/github-tag-action@v5.3
         with:
           github_token: ${{ github.token }}
           custom_tag: '${{ env.BUILD_GROUP_NUMBER }}'
           tag_prefix: 'build-'
-          custom_message: 'Build ${{ env.BUILD_GROUP_NUMBER }}, v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}'
 
       - name: Setup cloud SDK
         if: env.SHOULD_DEPLOY_TEST == 'true'
