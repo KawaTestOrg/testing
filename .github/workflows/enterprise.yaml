@@ -165,7 +165,7 @@ jobs:
       #   if: env.SHOULD_RELEASE == 'true'
       #   run: |
       #     echo "BUILD_URL=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_ENV
-
+      #   something new
       # - name: Sentry release
       #   if: env.SHOULD_RELEASE == 'true'
       #   uses: getsentry/action-release@v1
