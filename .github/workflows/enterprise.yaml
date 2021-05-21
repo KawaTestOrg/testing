@@ -244,12 +244,3 @@ jobs:
         uses: Reviewable/appengine-remove-action@v2
         with:
           limit: 5
-
-      # - name: Gitter Notification
-      #   if: always() && env.SHOULD_RELEASE == 'true'
-      #   uses: fjogeleit/http-request-action@master
-      #   with:
-      #     url: ${{ secrets.GITTER_URL }}
-      #     method: 'POST'
-      #     data: ${{ steps.notify_on_failure.outputs.NOTIFICATION || steps.notify_on_success.outputs.NOTIFICATION  }}
-      #     timeout: 15000
