@@ -186,23 +186,6 @@ jobs:
           branch: main
           repository: 'TEAMBLAWA/test-enterprise-tools'
 
-      # - name: Assign BUILD_URL
-      #   if: env.SHOULD_RELEASE == 'true'
-      #   run: |
-      #     echo "BUILD_URL=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_ENV
-      #   something new
-      # - name: Sentry release
-      #   if: env.SHOULD_RELEASE == 'true'
-      #   uses: getsentry/action-release@v1
-      #   env:
-      #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      #     SENTRY_PROJECT: ${{ env.SENTRY_PROJECT_ID }}
-      #   with:
-      #     sourcemaps: 'dist/static/js'
-      #     environment: 'production'
-      #     version: ${{ env.BUILD_GROUP_NUMBER }}
-      #     set_commits: skip
-
       - name: Tagging release version
         if: env.SHOULD_RELEASE == 'true'
         uses: Reviewable/github-tag-action@v6.1
