@@ -4,4 +4,3 @@ WORKDIR /usr/share/nginx/html
 # once again, a new commentt
 COPY testing/build ./
 # testing build
-# another test
