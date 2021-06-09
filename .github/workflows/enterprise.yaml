@@ -8,7 +8,7 @@ on:
       - release
       - master
 env:
-  GITHUB_TOKEN: ${{ github.token }}
+  REVIEWABLE_GITHUB_TOKEN: 'anthonykawa:${{ secrets.REVIEWABLE_GITHUB_TOKEN }}'
   SLACK_URL: ${{ secrets.SLACK_URL }}
   GIT_CONFIG_NAME: "Build Process"
   GIT_CONFIG_EMAIL: build@reviewable.io
@@ -41,7 +41,7 @@ jobs:
           git --version
       - uses: actions/checkout@v2
         with:
-          token: ${{ env.GITHUB_TOKEN || github.token }}
+          token: ${{ secrets.REVIEWABLE_GITHUB_TOKEN }}
       - name: Assign SHOULD_RELEASE
         run: |
           if [[ ${{ github.event_name }} != "pull_request" &&
@@ -181,17 +181,39 @@ jobs:
         if: env.SHOULD_RELEASE == 'true' && steps.commit_changes.outputs.CHANGES == 'true'
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ env.GITHUB_TOKEN || github.token }}
+          github_token: ${{ secrets.REVIEWABLE_GITHUB_TOKEN }}
           directory: './enterprise-tools'
           branch: main
           repository: 'TEAMBLAWA/test-enterprise-tools'
+
+      - name: Login to Docker Hub
+        if: env.SHOULD_RELEASE == 'true'
+        uses: docker/login-action@v1
+        with:
+          username: frankie95667
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        if: env.SHOULD_RELEASE == 'true'
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: 'frankie95667/testing, frankie95667/testing:${{steps.versions.outputs.SERVER_VERSION}}.${{steps.versions.outputs.CLIENT_VERSION}}'
+
+      - name: Assign BUILD_URL
+        if: env.SHOULD_RELEASE == 'true' || env.SHOULD_DEPLOY_TEST == 'true'
+        run: |
+          echo "BUILD_URL=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_ENV
+
       - name: Tagging release version
         if: env.SHOULD_RELEASE == 'true'
-        uses: Reviewable/github-tag-action@v6.1
+        uses: mathieudutour/github-tag-action@v5.3
         with:
+          github_token: ${{ github.token }}
           custom_tag: '${{ env.BUILD_GROUP_NUMBER }}'
           tag_prefix: 'build-'
-          custom_message: 'Build ${{ env.BUILD_GROUP_NUMBER }}, v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}'
 
       - name: Setup cloud SDK
         if: env.SHOULD_DEPLOY_TEST == 'true'
@@ -226,4 +248,50 @@ jobs:
         uses: Reviewable/appengine-remove-action@v2
         with:
           limit: 5
-# this is the end of the file
+
+      - name: Assign NOTIFICATION
+        id: notify_on_successful_release
+        if: env.SHOULD_RELEASE == 'true'
+        run: |
+          NOTIFICATION=$(echo "{\"level\": \"info\", \"message\": \"Enterprise [build $BUILD_GROUP_NUMBER v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}]($BUILD_URL) released\", \"html\": \"Enterprise <a href=\\\"$BUILD_URL\\\">build $BUILD_GROUP_NUMBER v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}</a> released\"}")
+          echo "::set-output name=NOTIFICATION::$NOTIFICATION"
+
+      - name: Assign NOTIFICATION on failure
+        id: notify_on_failed_release
+        if: env.SHOULD_RELEASE == 'true' && failure()
+        run: |
+          NOTIFICATION=$(echo "{\"level\": \"error\", \"message\": \"Enterprise [build $BUILD_GROUP_NUMBER]($BUILD_URL) deployment failed\", \"html\": \"Enterprise <a href=\\\"$BUILD_URL\\\">build $BUILD_GROUP_NUMBER v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}</a> failed\"}")
+          echo "::set-output name=NOTIFICATION::$NOTIFICATION"
+
+      - name: Assign NOTIFICATION
+        id: notify_on_successful_test_deploy
+        if: env.SHOULD_DEPLOY_TEST == 'true'
+        run: |
+          NOTIFICATION=$(echo "{\"level\": \"info\", \"message\": \"Enterprise test [build $BUILD_GROUP_NUMBER v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}]($BUILD_URL) released\", \"html\": \"Enterprise test <a href=\\\"$BUILD_URL\\\">build $BUILD_GROUP_NUMBER v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}</a> released\"}")
+          echo "::set-output name=NOTIFICATION::$NOTIFICATION"
+
+      - name: Assign NOTIFICATION on failure
+        id: notify_on_failed_test_deploy
+        if: env.SHOULD_DEPLOY_TEST == 'true' && failure()
+        run: |
+          NOTIFICATION=$(echo "{\"level\": \"error\", \"message\": \"Enterprise test [build $BUILD_GROUP_NUMBER]($BUILD_URL) deployment failed\", \"html\": \"Enterprise test <a href=\\\"$BUILD_URL\\\">build $BUILD_GROUP_NUMBER v${{ steps.versions.outputs.SERVER_VERSION }}.${{ steps.versions.outputs.CLIENT_VERSION }}</a> failed\"}")
+          echo "::set-output name=NOTIFICATION::$NOTIFICATION"
+
+      - name: Shortwave Notification
+        if: always() && (env.SHOULD_RELEASE == 'true' || env.SHOULD_DEPLOY_TEST == 'true')
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: ${{ secrets.SHORTWAVE_NOTIFICATIONS_URL }}
+          method: 'POST'
+          data: ${{ steps.notify_on_failed_release.outputs.NOTIFICATION || steps.notify_on_failed_test_deploy.outputs.NOTIFICATION || steps.notify_on_successful_release.outputs.NOTIFICATION || steps.notify_on_successful_test_deploy.outputs.NOTIFICATION  }}
+          timeout: 15000
+
+      ####################################
+      ##          on failure            ##
+      ####################################
+      - name: Delete release on failure
+        if: (env.SHOULD_RELEASE == 'true' || env.SHOULD_DEPLOY_TEST == 'true') && failure()
+        uses: dev-drprasad/delete-tag-and-release@v0.1.3
+        with:
+          delete_release: true
+          tag_name: "build-${{ env.BUILD_GROUP_NUMBER }}" # tag name to delete
