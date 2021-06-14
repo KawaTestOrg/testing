@@ -32,6 +32,7 @@ jobs:
       # IMPORANT: USE DOUBLEQUOTES (") WITHIN RUN BLOCKS
       # Bug in `act` tool causes git refs to assign with \\ as separators in windows environments
       # Bug: single quotes do not get intepreted correctly in if statements
+
       - name: Update git
         if: env.ACT
         run: |
