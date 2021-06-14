@@ -1,4 +1,4 @@
-name: Enterprise Workflow
+name: Enterprise Workflows
 on:
   pull_request:
     ignore-branches:
