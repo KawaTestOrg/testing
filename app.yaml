@@ -19,7 +19,7 @@ liveness_check:
   failure_threshold: 6
   success_threshold: 1
   initial_delay_sec: 60
-
+# TODO: I'm not sure
 env_variables:
   REVIEWABLE_HOST_URL: https://reviewable-enterprise-test.appspot-preview.com
   REVIEWABLE_GITHUB_URL: https://github.com
@@ -35,7 +35,4 @@ env_variables:
   REVIEWABLE_S3_BUCKET: files.reviewableusercontent.io
   REVIEWABLE_UPLOADED_FILES_URL: https://files.reviewableusercontent.io
   BLUEBIRD_LONG_STACK_TRACES: "1"
-  # comment added back
-
-
   # Github Actions will automatically append more env variables here, so keep this section at the end!
