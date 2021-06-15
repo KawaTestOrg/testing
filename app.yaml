@@ -19,7 +19,7 @@ liveness_check:
   failure_threshold: 6
   success_threshold: 1
   initial_delay_sec: 60
-
+# TODO: I'm not sure
 env_variables:
   REVIEWABLE_HOST_URL: https://reviewable-enterprise-test.appspot-preview.com
   REVIEWABLE_GITHUB_URL: https://github.com
