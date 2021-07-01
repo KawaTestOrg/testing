@@ -36,6 +36,4 @@ env_variables:
   REVIEWABLE_UPLOADED_FILES_URL: https://files.reviewableusercontent.io
   BLUEBIRD_LONG_STACK_TRACES: "1"
   # comment added back
-
-
   # Github Actions will automatically append more env variables here, so keep this section at the end!
